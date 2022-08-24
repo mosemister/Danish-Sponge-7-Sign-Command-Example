@@ -1,7 +1,5 @@
 package org.tegn.kommandoer.kommandoer;
 
-import org.spongepowered.api.block.tileentity.Sign;
-import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -11,21 +9,21 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.util.blockray.BlockRay;
-import org.spongepowered.api.util.blockray.BlockRayHit;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.tegn.kommandoer.SignerData;
 import org.tegn.kommandoer.TegnNytte;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-public class IndstilNedkolingskommando {
+public class TilfojeKommandoTilUnderskrivKommando {
 
-    private static final Text cooldownParameterNogle = Text.of("kol ned");
+    private static final Text kommandotast = Text.of("kommando");
 
-    public static class Kommandokorsel implements CommandExecutor {
+    public static class Eksekutor implements CommandExecutor {
 
         @Override
         public CommandResult execute(CommandSource kommandoAfsender, CommandContext kommandoerKontekst) throws CommandException {
@@ -35,7 +33,7 @@ public class IndstilNedkolingskommando {
             Player spiller = (Player)kommandoAfsender;
 
             //henter nedkølingen fra kommandoen. Hvis en ikke indtastes, bruger den nedkølingsværdien 0
-            long nedkoling = kommandoerKontekst.<Long>getOne(cooldownParameterNogle).orElse(0L);
+            String tilfoje = kommandoerKontekst.<String>getOne(kommandotast).orElse("");
             Optional<Location<World>> potationsskiltetsPlacering = TegnNytte.faSePaSkiltet(spiller);
             if(!potationsskiltetsPlacering.isPresent()){
                 throw new CommandException(Text.of("Ser ikke på skiltet"));
@@ -43,7 +41,11 @@ public class IndstilNedkolingskommando {
             Location<World> blokForanSpilleren = potationsskiltetsPlacering.get();
             SignerData kommandodata = new SignerData(blokForanSpilleren);
             try {
-                kommandodata.indstilleNedkoling(nedkoling);
+                List<String> originaleKommandoer =kommandodata.faKommandoer();
+                List<String> kopiAfKommandoer = new ArrayList<>(originaleKommandoer);
+                kopiAfKommandoer.add(tilfoje);
+                kommandodata.indstilleKommandoer(kopiAfKommandoer);
+                spiller.sendMessage(Text.of("Tilføjet kommando til at underskrive"));
             } catch (IOException e) {
                 //viser crash til konsollen
                 e.printStackTrace();
@@ -59,9 +61,9 @@ public class IndstilNedkolingskommando {
         return CommandSpec
                 .builder()
                 //Indstiller, hvad der skal køre, når kommandoen udføres
-                .executor(new Kommandokorsel())
+                .executor(new Eksekutor())
                 //Angiver, at der er 1 argument af en lang (64 bit heltal) type
-                .arguments(GenericArguments.longNum(cooldownParameterNogle))
+                .arguments(GenericArguments.remainingJoinedStrings(kommandotast))
                 .build();
     }
 }

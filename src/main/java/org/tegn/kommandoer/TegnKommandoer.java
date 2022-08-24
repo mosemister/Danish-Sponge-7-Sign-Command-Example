@@ -8,6 +8,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.tegn.kommandoer.kommandoer.IndstilNedkolingskommando;
+import org.tegn.kommandoer.kommandoer.TilfojeKommandoTilUnderskrivKommando;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ public class TegnKommandoer {
         CommandSpec underkommandoer = CommandSpec
                 .builder()
                 .child(IndstilNedkolingskommando.opretteKommando(), "kolned")
+                .child(TilfojeKommandoTilUnderskrivKommando.opretteKommando(),"tilføje")
                 .build();
 
 
